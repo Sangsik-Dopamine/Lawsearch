@@ -3,44 +3,583 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>법령 검색 앱</title>
+    <title>법령 검색 도구</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-        }
-        h1 {
+            font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+            line-height: 1.8;
             color: #333;
+            background-color: #f5f7fa;
         }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #1a1a1a;
+            font-size: 28px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .disclaimer {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+        
+        .disclaimer p {
+            color: #856404;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .search-section {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+        
         .search-box {
             width: 100%;
-            padding: 15px;
+            padding: 15px 20px;
             font-size: 16px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+            font-family: inherit;
         }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        .search-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
         button {
-            margin-top: 10px;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
+            padding: 12px 24px;
+            font-size: 16px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-family: inherit;
+        }
+        
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+            flex: 1;
+        }
+        
+        .btn-primary:hover {
+            background-color: #45a049;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .btn-secondary:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .results-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: none;
+        }
+        
+        .results-section.active {
+            display: block;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .results-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+        
+        /* 법령 계층 구조 스타일 */
+        .law-item {
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .law-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: opacity 0.3s;
+        }
+        
+        .law-header:hover {
+            opacity: 0.9;
+        }
+        
+        .law-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .law-toggle {
+            font-size: 20px;
+            transition: transform 0.3s;
+        }
+        
+        .law-item.expanded .law-toggle {
+            transform: rotate(180deg);
+        }
+        
+        .law-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .law-item.expanded .law-content {
+            max-height: 5000px;
+        }
+        
+        .law-body {
+            padding: 20px;
+            background: #fafafa;
+        }
+        
+        .law-text {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 3px solid #667eea;
+        }
+        
+        /* 시행령 스타일 */
+        .decree-item {
+            margin: 15px 0 15px 20px;
+            border: 1px solid #d0d0d0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .decree-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 14px 18px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: opacity 0.3s;
+        }
+        
+        .decree-header:hover {
+            opacity: 0.9;
+        }
+        
+        .decree-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .decree-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .decree-item.expanded .decree-content {
+            max-height: 3000px;
+        }
+        
+        .decree-item.expanded .law-toggle {
+            transform: rotate(180deg);
+        }
+        
+        .decree-body {
+            padding: 15px;
+            background: white;
+        }
+        
+        .decree-text {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            border-left: 3px solid #4facfe;
+        }
+        
+        /* 시행규칙 스타일 */
+        .rule-item {
+            margin: 12px 0 12px 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .rule-header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: opacity 0.3s;
+        }
+        
+        .rule-header:hover {
+            opacity: 0.9;
+        }
+        
+        .rule-title {
+            font-size: 15px;
+            font-weight: 600;
+        }
+        
+        .rule-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .rule-item.expanded .rule-content {
+            max-height: 2000px;
+        }
+        
+        .rule-item.expanded .law-toggle {
+            transform: rotate(180deg);
+        }
+        
+        .rule-body {
+            padding: 12px;
+            background: white;
+        }
+        
+        .rule-text {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #f093fb;
+        }
+        
+        /* PDF 다운로드용 프린트 스타일 */
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .search-section,
+            .btn-secondary,
+            .law-toggle {
+                display: none;
+            }
+            
+            .container {
+                max-width: 100%;
+                padding: 20px;
+            }
+            
+            .law-content,
+            .decree-content,
+            .rule-content {
+                max-height: none !important;
+            }
+            
+            .law-item,
+            .decree-item,
+            .rule-item {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.3;
         }
     </style>
 </head>
 <body>
-    <h1>법령 검색 도구</h1>
-    <p>⚠️ 본 서비스는 법령 정보 검색 도구입니다. 법적 조언을 제공하지 않습니다.</p>
-    
-    <input type="text" class="search-box" placeholder="예: 땅을 샀는데 묘지가 있다면?" />
-    <button>검색</button>
-    
-    <div id="results" style="margin-top: 30px;">
-        <p>검색 결과가 여기에 표시됩니다.</p>
+    <div class="container">
+        <header>
+            <h1>📚 법령 검색 도구</h1>
+            <div class="disclaimer">
+                <p>⚠️ <strong>중요:</strong> 본 서비스는 법령 정보 검색 도구로, 법적 조언이나 해석을 제공하지 않습니다. 중요한 법적 결정은 반드시 변호사와 상담하세요. 검색 결과의 완전성을 보장하지 않습니다.</p>
+            </div>
+        </header>
+        
+        <div class="search-section">
+            <input 
+                type="text" 
+                class="search-box" 
+                id="searchInput"
+                placeholder="예: 땅을 샀는데 묘지가 있다면 어떻게 하나요?"
+                onkeypress="if(event.key === 'Enter') searchLaw()"
+            />
+            <div class="search-actions">
+                <button class="btn-primary" onclick="searchLaw()">🔍 검색하기</button>
+            </div>
+        </div>
+        
+        <div class="results-section" id="resultsSection">
+            <div class="results-header">
+                <h2 class="results-title">검색 결과</h2>
+                <button class="btn-secondary" id="pdfButton" onclick="downloadPDF()">📥 PDF 다운로드</button>
+            </div>
+            <div id="resultsContent">
+                <!-- 검색 결과가 여기에 표시됩니다 -->
+            </div>
+        </div>
     </div>
+
+    <script>
+        // 검색 함수
+        function searchLaw() {
+            const query = document.getElementById('searchInput').value.trim();
+            
+            if (!query) {
+                alert('검색어를 입력해주세요.');
+                return;
+            }
+            
+            // 결과 섹션 표시
+            const resultsSection = document.getElementById('resultsSection');
+            const resultsContent = document.getElementById('resultsContent');
+            resultsSection.classList.add('active');
+            
+            // 로딩 표시
+            resultsContent.innerHTML = '<div class="loading">검색 중입니다</div>';
+            
+            // 실제로는 API를 호출하겠지만, 지금은 예시 데이터 표시
+            setTimeout(() => {
+                displayMockResults(query);
+            }, 1500);
+        }
+        
+        // 예시 결과 표시 (나중에 실제 API 데이터로 대체)
+        function displayMockResults(query) {
+            const resultsContent = document.getElementById('resultsContent');
+            
+            // 예시 데이터 구조
+            const mockData = [
+                {
+                    law: {
+                        name: '민법',
+                        article: '제245조 (점유권의 취득과 소멸)',
+                        content: '물건을 사실상 지배하는 자는 점유권이 있다. 점유는 자기를 위한 의사로 물건을 지배함으로써 취득한다.'
+                    },
+                    decrees: [
+                        {
+                            name: '민법 시행령',
+                            article: '제12조 (토지 점유의 특례)',
+                            content: '토지의 점유에 관하여는 특별한 사정이 있는 경우 법원이 이를 인정할 수 있다.',
+                            rules: [
+                                {
+                                    name: '민법 시행규칙',
+                                    article: '제5조 (점유 인정 기준)',
+                                    content: '점유의 인정은 실질적 지배관계를 기준으로 하며, 형식적 소유권만으로는 부족하다.'
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    law: {
+                        name: '장사 등에 관한 법률',
+                        article: '제27조 (분묘의 개장 등)',
+                        content: '분묘의 연고자는 해당 분묘가 설치된 토지 등의 소유자·점유자 또는 관리자의 승낙을 받아 분묘를 개장할 수 있다.'
+                    },
+                    decrees: [
+                        {
+                            name: '장사 등에 관한 법률 시행령',
+                            article: '제20조 (개장의 절차)',
+                            content: '분묘를 개장하려는 자는 개장 30일 전까지 시장·군수·구청장에게 신고하여야 한다.',
+                            rules: [
+                                {
+                                    name: '장사 등에 관한 법률 시행규칙',
+                                    article: '제15조 (신고서 양식)',
+                                    content: '개장 신고는 별지 제12호 서식에 따라 작성하여 제출하여야 한다.'
+                                }
+                            ]
+                        },
+                        {
+                            name: '장사 등에 관한 법률 시행령',
+                            article: '제21조 (무연분묘의 처리)',
+                            content: '연고자가 없는 분묘는 특별자치시장·특별자치도지사·시장·군수·구청장이 관리할 수 있다.',
+                            rules: []
+                        }
+                    ]
+                },
+                {
+                    law: {
+                        name: '매매계약에 관한 법률 (민법 제570조)',
+                        article: '제570조 (매도인의 하자담보책임)',
+                        content: '매매의 목적물에 하자가 있는 때에는 제580조의 규정을 준용한다. 그러나 매수인이 하자있는 것을 알았거나 과실로 인하여 이를 알지 못한 때에는 그러하지 아니하다.'
+                    },
+                    decrees: []
+                }
+            ];
+            
+            // HTML 생성
+            let html = '';
+            
+            mockData.forEach((item, index) => {
+                html += `
+                    <div class="law-item" id="law-${index}">
+                        <div class="law-header" onclick="toggleItem('law-${index}')">
+                            <div class="law-title">${item.law.name}</div>
+                            <div class="law-toggle">▼</div>
+                        </div>
+                        <div class="law-content">
+                            <div class="law-body">
+                                <div class="law-text">
+                                    <strong>${item.law.article}</strong><br>
+                                    ${item.law.content}
+                                </div>
+                `;
+                
+                // 시행령 추가
+                item.decrees.forEach((decree, dIndex) => {
+                    html += `
+                        <div class="decree-item" id="decree-${index}-${dIndex}">
+                            <div class="decree-header" onclick="toggleItem('decree-${index}-${dIndex}')">
+                                <div class="decree-title">${decree.name}</div>
+                                <div class="law-toggle">▼</div>
+                            </div>
+                            <div class="decree-content">
+                                <div class="decree-body">
+                                    <div class="decree-text">
+                                        <strong>${decree.article}</strong><br>
+                                        ${decree.content}
+                                    </div>
+                    `;
+                    
+                    // 시행규칙 추가
+                    decree.rules.forEach((rule, rIndex) => {
+                        html += `
+                            <div class="rule-item" id="rule-${index}-${dIndex}-${rIndex}">
+                                <div class="rule-header" onclick="toggleItem('rule-${index}-${dIndex}-${rIndex}')">
+                                    <div class="rule-title">${rule.name}</div>
+                                    <div class="law-toggle">▼</div>
+                                </div>
+                                <div class="rule-content">
+                                    <div class="rule-body">
+                                        <div class="rule-text">
+                                            <strong>${rule.article}</strong><br>
+                                            ${rule.content}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultsContent.innerHTML = html;
+        }
+        
+        // 아이템 펼치기/접기
+        function toggleItem(itemId) {
+            const item = document.getElementById(itemId);
+            item.classList.toggle('expanded');
+        }
+        
+        // PDF 다운로드
+        function downloadPDF() {
+            alert('PDF 다운로드 기능은 jsPDF 라이브러리 추가 후 구현됩니다.\n현재는 브라우저의 인쇄 기능(Ctrl+P)을 사용해 PDF로 저장하실 수 있습니다.');
+            window.print();
+        }
+    </script>
 </body>
 </html>
