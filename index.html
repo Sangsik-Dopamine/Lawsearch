@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>법령 검색 앱</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .search-box {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>법령 검색 도구</h1>
+    <p>⚠️ 본 서비스는 법령 정보 검색 도구입니다. 법적 조언을 제공하지 않습니다.</p>
+    
+    <input type="text" class="search-box" placeholder="예: 땅을 샀는데 묘지가 있다면?" />
+    <button>검색</button>
+    
+    <div id="results" style="margin-top: 30px;">
+        <p>검색 결과가 여기에 표시됩니다.</p>
+    </div>
+</body>
+</html>
