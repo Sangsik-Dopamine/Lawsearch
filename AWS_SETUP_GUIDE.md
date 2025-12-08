@@ -22,19 +22,25 @@ For this project, we'll use **us-east-1** (N. Virginia) as it has the best Bedro
 
 ## Step 2: AWS Bedrock Setup
 
-### 2.1 Enable Bedrock Models
+### 2.1 Verify Bedrock Access (Automatic Enablement)
+
+**Good News!** AWS has simplified Bedrock access. Models are now **automatically enabled** when first invoked - no manual activation needed!
+
+#### What You Need to Know:
+- ✅ **Nova Pro** and **Titan Embeddings** will be enabled automatically when you first use them
+- ✅ No need to visit the "Model access" page (it's been retired)
+- ✅ First-time API call will activate the model for your account
+- ✅ IAM permissions still control access (we'll set this up in Step 5)
+
+#### Optional: Verify Bedrock is Available
 1. Log into AWS Console
 2. Search for "Bedrock" in the top search bar
 3. Click "Amazon Bedrock"
-4. In the left sidebar, click **"Model access"**
-5. Click **"Enable specific models"** or **"Manage model access"**
-6. Find and enable:
-   - ✅ **Amazon Nova Pro** (nova-pro-v1:0)
-   - ✅ **Amazon Titan Embeddings G1 - Text** (for RAG embeddings)
-7. Click **"Request model access"** or **"Save changes"**
-8. Wait 2-5 minutes for approval (usually instant)
+4. Browse **"Model catalog"** in the left sidebar
+5. Search for **"Nova Pro"** to confirm it's available in your region
+6. You can test it in the **Playground** (optional)
 
-> **Note:** Model access is per-region. Make sure you're in **us-east-1**.
+> **Note:** Make sure you're in **us-east-1** region. Models will auto-enable on first use via API.
 
 ---
 
@@ -286,10 +292,12 @@ For development/testing:
 
 ## Quick Troubleshooting
 
-### Model Access Denied
-- Verify model access in Bedrock console
-- Check IAM policy includes correct model ARNs
+### Model Access Denied or "ResourceNotFoundException"
+- **Models auto-enable on first use** - the first API call may take a few extra seconds
+- Check IAM policy includes correct model ARNs (see Step 5.1)
 - Ensure you're in correct region (us-east-1)
+- For Anthropic models (Claude), some users may need to submit use case details
+- **Nova models** (Amazon) typically don't require use case approval
 
 ### OpenSearch Connection Failed
 - Check security group allows your IP
